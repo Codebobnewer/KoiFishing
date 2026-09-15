@@ -1,8 +1,23 @@
-# Koi
+# 🎣 Koi
+
+![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk&logoColor=white)
+![Paper](https://img.shields.io/badge/Paper-1.21.11-blue?logo=minecraft&logoColor=white)
+![Folia](https://img.shields.io/badge/Folia-supported-brightgreen)
+![CommandAPI](https://img.shields.io/badge/requires-CommandAPI-lightgrey)
+![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-inactive)
 
 A custom fishing plugin for **Folia + Paper 1.21.11**, built in strict Java 21 OOP. Replaces
 vanilla fishing with a click-reveal reel-in minigame, rarity-tiered fish/treasure/junk, rod
 tiers, bait, a personal collection book, and server-wide tournaments.
+
+## Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Building](#building)
+- [Commands](#commands)
+- [Configuration](#configuration)
+- [Architecture](#architecture)
 
 ## Features
 
@@ -31,6 +46,11 @@ tiers, bait, a personal collection book, and server-wide tournaments.
 - **Live fish pool editor** — `/koi config` opens an in-game GUI to add, remove, and retune every
   species (fish, treasure, and junk) without touching a file.
 
+> [!NOTE]
+> Custom fish/treasure/junk beyond vanilla's cod/salmon/pufferfish/tropical fish reuse those
+> materials with distinct CustomModelData values. Actual resource-pack textures are a separate
+> art task, not part of this plugin.
+
 ## Requirements
 
 - Java 21
@@ -42,9 +62,12 @@ tiers, bait, a personal collection book, and server-wide tournaments.
 
 The Maven wrapper is checked in, so no local Maven install is required:
 
-```
+```bash
 ./mvnw package        # macOS/Linux
-mvnw.cmd package       # Windows
+```
+
+```powershell
+mvnw.cmd package      # Windows
 ```
 
 The shaded jar lands at `target/Koi-1.0.0.jar`. Drop it into the server's `plugins/` folder
@@ -63,6 +86,24 @@ alongside CommandAPI.
 | `/koi tournament setprize\|start\|stop\|status` | Run a tournament | `koi.admin` (`status` is open to all) |
 | `/koidex` | Open your personal collection book | none |
 
+<details>
+<summary><strong>Rod tiers &amp; bait reference</strong></summary>
+
+| Rod | Hook window | Rarity boost |
+|---|---|---|
+| Wood | 5–30s | none |
+| Iron | 4–22s | low |
+| Diamond | 2.75–14s | medium |
+| Koi | 1.5–7.5s | high |
+
+| Bait | Favors | Craft |
+|---|---|---|
+| Worm Bait | Common / Uncommon | 8× String + Nether Wart |
+| Shrimp Bait | Rare / Epic | 8× Prismarine Shard + Nether Wart |
+| Glowing Lure | Legendary / Mythic | 8× Glow Ink Sac + Nether Wart |
+
+</details>
+
 ## Configuration
 
 - `config.yml` — per-world enable/disable, default catch sound, vanilla-loot toggle, reel
@@ -75,13 +116,17 @@ alongside CommandAPI.
 
 Strict OOP, one concern per package:
 
-- `fishing` / `fishing.minigame` — domain model, catch pool, and the reel-in minigame
-- `item` — rod and bait items
-- `tournament` — timed server-wide events
-- `command` — `/koi` and `/koidex` registration (CommandAPI)
-- `listener` — Bukkit event hooks
-- `menu` — InvUI GUIs (fish editor, Koi-dex)
-- `data` — SQLite persistence (catch history, aggregate stats)
-- `config` — `config.yml` / `fish-pool.yml` loading
+| Package | Responsibility |
+|---|---|
+| `fishing` / `fishing.minigame` | Domain model, catch pool, and the reel-in minigame |
+| `item` | Rod and bait items |
+| `tournament` | Timed server-wide events |
+| `command` | `/koi` and `/koidex` registration (CommandAPI) |
+| `listener` | Bukkit event hooks |
+| `menu` | InvUI GUIs (fish editor, Koi-dex) |
+| `data` | SQLite persistence (catch history, aggregate stats) |
+| `config` | `config.yml` / `fish-pool.yml` loading |
 
-See `CLAUDE.md` for the full guidance this project was built against.
+---
+
+See [`CLAUDE.md`](CLAUDE.md) for the full guidance this project was built against.
