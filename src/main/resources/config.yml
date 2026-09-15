@@ -1,0 +1,18 @@
+# Koi configuration
+
+database:
+  file: koi.db
+
+fishing:
+  # Fishing is enabled globally; list worlds here (or use /koi world disable) to opt them out.
+  disabled-worlds: []
+
+  # Played on catch for any species without its own catch-sound in fish-pool.yml.
+  default-catch-sound: ENTITY_PLAYER_LEVELUP
+
+  # Whether treasure/junk entries flagged vanilla-loot: true in fish-pool.yml (vanilla items
+  # dropped as-is, e.g. saddles/name tags) can be rolled at all. Off by default.
+  vanilla-loot-enabled: false
+
+  minigame:
+    tick-period-ticks: 2

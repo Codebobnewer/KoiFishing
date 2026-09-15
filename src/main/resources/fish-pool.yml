@@ -1,0 +1,166 @@
+# Koi fish pool - seed data. Custom model data values are placeholders pending a resource pack.
+# Editable in-game via /koi setspawn. category is FISH, TREASURE, or JUNK - all three share the
+# same pool/roll/reel-in minigame. catch-sound is optional per entry; species without one fall
+# back to fishing.default-catch-sound in config.yml. vanilla-loot: true entries (vanilla items
+# dropped as-is) are only rolled while fishing.vanilla-loot-enabled is on in config.yml.
+
+species:
+  common_cod:
+    display-name: "Common Cod"
+    rarity: COMMON
+    material: COD
+    custom-model-data: 0
+    drop-weight: 1.0
+    category: FISH
+  common_salmon:
+    display-name: "River Salmon"
+    rarity: COMMON
+    material: SALMON
+    custom-model-data: 0
+    drop-weight: 1.0
+    category: FISH
+  uncommon_perch:
+    display-name: "Speckled Perch"
+    rarity: UNCOMMON
+    material: COD
+    custom-model-data: 101
+    drop-weight: 1.0
+    category: FISH
+  uncommon_bass:
+    display-name: "Silver Bass"
+    rarity: UNCOMMON
+    material: SALMON
+    custom-model-data: 102
+    drop-weight: 1.0
+    category: FISH
+  rare_koi:
+    display-name: "Rare Koi"
+    rarity: RARE
+    material: TROPICAL_FISH
+    custom-model-data: 201
+    drop-weight: 1.0
+    category: FISH
+  rare_pufferking:
+    display-name: "Puffer King"
+    rarity: RARE
+    material: PUFFERFISH
+    custom-model-data: 202
+    drop-weight: 1.0
+    category: FISH
+  epic_stormfin:
+    display-name: "Stormfin"
+    rarity: EPIC
+    material: TROPICAL_FISH
+    custom-model-data: 301
+    drop-weight: 1.0
+    category: FISH
+  epic_duskray:
+    display-name: "Duskray"
+    rarity: EPIC
+    material: PUFFERFISH
+    custom-model-data: 302
+    drop-weight: 1.0
+    category: FISH
+  legendary_leviathan_spawn:
+    display-name: "Leviathan Spawn"
+    rarity: LEGENDARY
+    material: COD
+    custom-model-data: 401
+    drop-weight: 1.0
+    category: FISH
+  legendary_goldenkoi:
+    display-name: "Golden Koi"
+    rarity: LEGENDARY
+    material: TROPICAL_FISH
+    custom-model-data: 402
+    drop-weight: 1.0
+    category: FISH
+  mythic_abyssal_koi:
+    display-name: "Abyssal Koi"
+    rarity: MYTHIC
+    material: TROPICAL_FISH
+    custom-model-data: 501
+    drop-weight: 1.0
+    category: FISH
+    catch-sound: UI_TOAST_CHALLENGE_COMPLETE
+
+  # Vanilla treasure - dropped as-is, no CustomModelData. Off unless vanilla-loot-enabled: true.
+  treasure_saddle:
+    display-name: "Saddle"
+    rarity: EPIC
+    material: SADDLE
+    custom-model-data: 0
+    drop-weight: 0.6
+    category: TREASURE
+    catch-sound: BLOCK_CHEST_OPEN
+    vanilla-loot: true
+  treasure_name_tag:
+    display-name: "Name Tag"
+    rarity: LEGENDARY
+    material: NAME_TAG
+    custom-model-data: 0
+    drop-weight: 0.5
+    category: TREASURE
+    catch-sound: BLOCK_CHEST_OPEN
+    vanilla-loot: true
+  treasure_enchanted_book:
+    display-name: "Enchanted Book"
+    rarity: RARE
+    material: ENCHANTED_BOOK
+    custom-model-data: 0
+    drop-weight: 0.7
+    category: TREASURE
+    catch-sound: BLOCK_CHEST_OPEN
+    vanilla-loot: true
+
+  # Koi-flavored custom treasure/junk - their own CustomModelData, same as non-vanilla fish.
+  treasure_message_in_bottle:
+    display-name: "Message in a Bottle"
+    rarity: RARE
+    material: PAPER
+    custom-model-data: 601
+    drop-weight: 0.8
+    category: TREASURE
+    catch-sound: BLOCK_CHEST_OPEN
+
+  # Vanilla junk - dropped as-is. Off unless vanilla-loot-enabled: true.
+  junk_leather:
+    display-name: "Old Leather"
+    rarity: COMMON
+    material: LEATHER
+    custom-model-data: 0
+    drop-weight: 0.8
+    category: JUNK
+    vanilla-loot: true
+  junk_bowl:
+    display-name: "Cracked Bowl"
+    rarity: COMMON
+    material: BOWL
+    custom-model-data: 0
+    drop-weight: 0.8
+    category: JUNK
+    vanilla-loot: true
+  junk_string:
+    display-name: "Tangled String"
+    rarity: UNCOMMON
+    material: STRING
+    custom-model-data: 0
+    drop-weight: 0.6
+    category: JUNK
+    vanilla-loot: true
+
+  # Koi-flavored custom junk.
+  junk_waterlogged_boot:
+    display-name: "Waterlogged Boot"
+    rarity: COMMON
+    material: LEATHER_BOOTS
+    custom-model-data: 602
+    drop-weight: 1.0
+    category: JUNK
+  junk_rusty_trinket:
+    display-name: "Rusty Trinket"
+    rarity: UNCOMMON
+    material: IRON_NUGGET
+    custom-model-data: 603
+    drop-weight: 0.6
+    category: JUNK

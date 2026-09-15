@@ -1,0 +1,12 @@
+name: Koi
+version: '${project.version}'
+main: xyz.goga221.koi.KoiPlugin
+api-version: '1.21'
+folia-supported: true
+author: goga221
+description: Folia/Paper compatible fishing plugin.
+depend: [CommandAPI]
+permissions:
+  koi.admin:
+    description: Access to /koi give, reload, world, and config
+    default: op
