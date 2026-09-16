@@ -3,6 +3,7 @@ package xyz.goga221.koi.tournament;
 import xyz.goga221.koi.KoiPlugin;
 import xyz.goga221.koi.fishing.FishRarity;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -77,8 +78,11 @@ public class TournamentManager {
         }
         boolean tookLead = tournament.recordCatch(player.getUniqueId(), rarity);
         if (tookLead) {
-            plugin.getServer().broadcast(MM.deserialize("<gold>" + player.getName()
-                    + " takes the tournament lead with a <yellow>" + rarity.name() + "</yellow> catch!</gold>"));
+            // Broadcast to every player - player.getName() must go through a placeholder, not
+            // string concatenation, so a crafted name can't inject MiniMessage tags server-wide.
+            plugin.getServer().broadcast(MM.deserialize("<gold><player> takes the tournament lead with a <yellow>"
+                            + rarity.name() + "</yellow> catch!</gold>",
+                    Placeholder.unparsed("player", player.getName())));
         }
     }
 
@@ -97,8 +101,9 @@ public class TournamentManager {
         Player winner = plugin.getServer().getPlayer(finished.getLeaderId());
         String winnerName = winner != null ? winner.getName() : finished.getLeaderId().toString();
 
-        plugin.getServer().broadcast(MM.deserialize("<gold>The Koi fishing tournament is over! <yellow>" + winnerName
-                + "</yellow> wins with a <yellow>" + finished.getLeaderRarity().name() + "</yellow> catch!</gold>"));
+        plugin.getServer().broadcast(MM.deserialize("<gold>The Koi fishing tournament is over! <yellow><winner></yellow> wins with a <yellow>"
+                        + finished.getLeaderRarity().name() + "</yellow> catch!</gold>",
+                Placeholder.unparsed("winner", winnerName)));
 
         if (winner != null) {
             var leftover = winner.getInventory().addItem(finished.getPrize());

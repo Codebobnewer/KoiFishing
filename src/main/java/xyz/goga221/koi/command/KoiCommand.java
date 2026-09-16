@@ -17,6 +17,7 @@ import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -81,13 +82,18 @@ public class KoiCommand {
 
                     ItemStack item = buildGiveItem(type, id);
                     if (item == null) {
-                        player.sendMessage(MM.deserialize("<red>Unknown " + type + " id: " + id + "</red>"));
+                        // type is constrained to rod/bait/fish by MultiLiteralArgument (safe to
+                        // inline); id is free text, so it goes through a placeholder.
+                        player.sendMessage(MM.deserialize("<red>Unknown " + type + " id: <id></red>",
+                                Placeholder.unparsed("id", id)));
                         return;
                     }
 
                     item.setAmount(Math.max(1, Math.min(64, amount)));
                     target.getInventory().addItem(item);
-                    player.sendMessage(MM.deserialize("<green>Gave " + target.getName() + " " + amount + "x " + id + "</green>"));
+                    player.sendMessage(MM.deserialize("<green>Gave <target> " + amount + "x <id></green>",
+                            Placeholder.unparsed("target", target.getName()),
+                            Placeholder.unparsed("id", id)));
                 });
     }
 
@@ -112,7 +118,8 @@ public class KoiCommand {
 
                     World world = plugin.getServer().getWorld(worldName);
                     if (world == null) {
-                        player.sendMessage(MM.deserialize("<red>Unknown world: " + worldName + "</red>"));
+                        player.sendMessage(MM.deserialize("<red>Unknown world: <world></red>",
+                                Placeholder.unparsed("world", worldName)));
                         return;
                     }
 
@@ -154,8 +161,8 @@ public class KoiCommand {
                     }
 
                     plugin.getFishManager().forceNextTier(target.getUniqueId(), rarity);
-                    player.sendMessage(MM.deserialize("<green>" + target.getName() + "'s next catch will be <yellow>"
-                            + rarity.name() + "</yellow>.</green>"));
+                    player.sendMessage(MM.deserialize("<green><target>'s next catch will be <yellow>" + rarity.name() + "</yellow>.</green>",
+                            Placeholder.unparsed("target", target.getName())));
                 });
     }
 
@@ -166,7 +173,8 @@ public class KoiCommand {
                 .executesPlayer((player, args) -> {
                     Player target = args.getOrDefaultUnchecked("player", player);
                     plugin.getFishManager().clearForcedTier(target.getUniqueId());
-                    player.sendMessage(MM.deserialize("<green>Cleared the forced tier override for " + target.getName() + ".</green>"));
+                    player.sendMessage(MM.deserialize("<green>Cleared the forced tier override for <target>.</green>",
+                            Placeholder.unparsed("target", target.getName())));
                 });
     }
 
@@ -185,12 +193,14 @@ public class KoiCommand {
                         Optional<PlayerFishStats> stats = plugin.getDatabaseManager().getCatchRepository().findStats(target.getUniqueId());
                         plugin.getScheduler().runTask(player, () -> {
                             if (stats.isEmpty()) {
-                                player.sendMessage(MM.deserialize("<yellow>" + target.getName() + " hasn't caught anything yet.</yellow>"));
+                                player.sendMessage(MM.deserialize("<yellow><target> hasn't caught anything yet.</yellow>",
+                                        Placeholder.unparsed("target", target.getName())));
                                 return;
                             }
 
                             PlayerFishStats playerStats = stats.get();
-                            player.sendMessage(MM.deserialize("<gold>" + target.getName() + "'s Koi stats</gold>"));
+                            player.sendMessage(MM.deserialize("<gold><target>'s Koi stats</gold>",
+                                    Placeholder.unparsed("target", target.getName())));
                             player.sendMessage(MM.deserialize("<gray>Total catches: <white>" + playerStats.getTotalCatches() + "</white></gray>"));
                             player.sendMessage(MM.deserialize("<gray>Rarest catch: <white>" + playerStats.getBestRarity().name() + "</white></gray>"));
                         });
@@ -261,7 +271,8 @@ public class KoiCommand {
                             : plugin.getServer().getOfflinePlayer(active.getLeaderId()).getName()
                                     + " (" + active.getLeaderRarity().name() + ")";
                     player.sendMessage(MM.deserialize("<gold>Tournament: <yellow>" + active.secondsRemaining()
-                            + "s</yellow> remaining. Leader: <yellow>" + leader + "</yellow></gold>"));
+                            + "s</yellow> remaining. Leader: <yellow><leader></yellow></gold>",
+                            Placeholder.unparsed("leader", leader)));
                 });
     }
 

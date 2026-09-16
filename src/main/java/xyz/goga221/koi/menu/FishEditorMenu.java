@@ -6,7 +6,10 @@ import xyz.goga221.koi.fishing.FishRarity;
 import xyz.goga221.koi.fishing.FishSpecies;
 import xyz.goga221.koi.fishing.LootCategory;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Material;
+import static xyz.goga221.koi.menu.MenuText.mmLore;
+import static xyz.goga221.koi.menu.MenuText.mmName;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.gui.Gui;
@@ -66,13 +69,13 @@ public class FishEditorMenu {
                 .addIngredient('<', new PageItem(false) {
                     @Override
                     public ItemProvider getItemProvider(PagedGui<?> gui) {
-                        return new ItemBuilder(Material.ARROW).setDisplayName("§ePrevious Page");
+                        return new ItemBuilder(Material.ARROW).setDisplayName(mmName("<yellow>Previous Page"));
                     }
                 })
                 .addIngredient('>', new PageItem(true) {
                     @Override
                     public ItemProvider getItemProvider(PagedGui<?> gui) {
-                        return new ItemBuilder(Material.ARROW).setDisplayName("§eNext Page");
+                        return new ItemBuilder(Material.ARROW).setDisplayName(mmName("<yellow>Next Page"));
                     }
                 })
                 .addIngredient('a', addFishButton(player))
@@ -81,8 +84,8 @@ public class FishEditorMenu {
 
     private Item addFishButton(Player owner) {
         return new SimpleItem(new ItemBuilder(Material.EMERALD)
-                .setDisplayName("§aAdd New Fish")
-                .addLoreLines("§7Hold the item to use, then click"), click -> {
+                .setDisplayName(mmName("<green>Add New Fish"))
+                .addLoreLines(mmLore("<gray>Hold the item to use, then click")), click -> {
             Player player = click.getPlayer();
             ItemStack held = player.getInventory().getItemInMainHand();
             if (held.getType().isAir()) {
@@ -100,19 +103,22 @@ public class FishEditorMenu {
     }
 
     private Item speciesItem(FishSpecies species) {
+        // species.getDisplayName() is admin-set free text (fish editor add-wizard) - goes
+        // through a placeholder rather than straight into the template, same reasoning as the
+        // chat messages built from it elsewhere.
         ItemBuilder builder = new ItemBuilder(species.getMaterial())
-                .setDisplayName("§f" + species.getDisplayName())
-                .addLoreLines(
-                        "§7Rarity: §f" + species.getRarity().name(),
-                        "§7Category: §f" + species.getCategory().name(),
-                        "§7Drop weight: §f" + species.getDropWeight(),
+                .setDisplayName(mmName("<white><name>", Placeholder.unparsed("name", species.getDisplayName())))
+                .addLoreLines(mmLore(
+                        "<gray>Rarity: <white>" + species.getRarity().name(),
+                        "<gray>Category: <white>" + species.getCategory().name(),
+                        "<gray>Drop weight: <white>" + species.getDropWeight(),
                         "",
-                        "§eLeft-click: §7cycle rarity",
-                        "§eDrop (Q): §7cycle category",
-                        "§eRight-click: §7+0.5 drop weight",
-                        "§eShift-right-click: §7-0.5 drop weight",
-                        "§cShift-left-click: §7remove"
-                );
+                        "<yellow>Left-click: <gray>cycle rarity",
+                        "<yellow>Drop (Q): <gray>cycle category",
+                        "<yellow>Right-click: <gray>+0.5 drop weight",
+                        "<yellow>Shift-right-click: <gray>-0.5 drop weight",
+                        "<red>Shift-left-click: <gray>remove"
+                ));
 
         return new SimpleItem(builder, click -> {
             Player player = click.getPlayer();
@@ -163,9 +169,13 @@ public class FishEditorMenu {
     }
 
     private void startAddWizard(Player player, Material material, int customModelData) {
+        // Everything typed into this wizard is untrusted chat input - always pass it through
+        // Placeholder.unparsed rather than splicing it into the MiniMessage template string,
+        // or a crafted id/name could inject MiniMessage tags into the parsed message.
         prompt.await(player, "Enter a unique fish id (letters/numbers/underscore):", id -> {
             if (plugin.getFishManager().getPool().findSpecies(id).isPresent()) {
-                player.sendMessage(MM.deserialize("<red>A fish with id '" + id + "' already exists.</red>"));
+                player.sendMessage(MM.deserialize("<red>A fish with id '<id>' already exists.</red>",
+                        Placeholder.unparsed("id", id)));
                 return;
             }
             prompt.await(player, "Enter a display name:", displayName ->
@@ -179,13 +189,15 @@ public class FishEditorMenu {
             try {
                 rarity = FishRarity.valueOf(rarityName.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException e) {
-                player.sendMessage(MM.deserialize("<red>Unknown rarity: " + rarityName + "</red>"));
+                player.sendMessage(MM.deserialize("<red>Unknown rarity: <rarity></red>",
+                        Placeholder.unparsed("rarity", rarityName)));
                 return;
             }
 
             FishSpecies species = new FishSpecies(id, displayName, rarity, material, customModelData, 1.0);
             plugin.getFishManager().getPool().addSpecies(species);
-            player.sendMessage(MM.deserialize("<green>Added fish '" + displayName + "'.</green>"));
+            player.sendMessage(MM.deserialize("<green>Added fish '<name>'.</green>",
+                    Placeholder.unparsed("name", displayName)));
             open(player);
             plugin.getScheduler().runTaskAsynchronously(() -> plugin.getFishPoolConfig().save(plugin.getFishManager().getPool()));
         });

@@ -10,6 +10,7 @@ import xyz.goga221.koi.item.RodItems;
 import xyz.goga221.koi.item.RodTier;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -150,8 +151,12 @@ public class FishManager {
             case TREASURE -> "found";
             case JUNK -> "fished up";
         };
-        player.sendMessage(MM.deserialize("<green>You " + verb + " <yellow>" + species.getDisplayName()
-                + "</yellow>! <gray>(" + species.getRarity().name() + ")</gray></green>"));
+        // species.getDisplayName() is admin-set (fish editor chat wizard) and broadcast to
+        // every player who catches this species - never splice it into the MiniMessage
+        // template directly, or a malicious display name could smuggle in <click>/<hover> tags
+        // rendered in other players' chat. Placeholder.unparsed treats it as literal text.
+        player.sendMessage(MM.deserialize("<green>You " + verb + " <yellow><fish_name></yellow>! <gray>(" + species.getRarity().name() + ")</gray></green>",
+                Placeholder.unparsed("fish_name", species.getDisplayName())));
 
         plugin.getTournamentManager().recordCatch(player, species.getRarity());
     }

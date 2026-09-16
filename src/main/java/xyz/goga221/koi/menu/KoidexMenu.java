@@ -2,6 +2,7 @@ package xyz.goga221.koi.menu;
 
 import xyz.goga221.koi.KoiPlugin;
 import xyz.goga221.koi.fishing.FishSpecies;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import xyz.xenondevs.invui.gui.Gui;
@@ -17,6 +18,9 @@ import xyz.xenondevs.invui.window.Window;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import static xyz.goga221.koi.menu.MenuText.mmLore;
+import static xyz.goga221.koi.menu.MenuText.mmName;
 
 /**
  * Personal collection-book GUI opened by {@code /koidex}: every species in the pool, shown as
@@ -58,13 +62,13 @@ public class KoidexMenu {
                 .addIngredient('<', new PageItem(false) {
                     @Override
                     public ItemProvider getItemProvider(PagedGui<?> gui) {
-                        return new ItemBuilder(Material.ARROW).setDisplayName("§ePrevious Page");
+                        return new ItemBuilder(Material.ARROW).setDisplayName(mmName("<yellow>Previous Page"));
                     }
                 })
                 .addIngredient('>', new PageItem(true) {
                     @Override
                     public ItemProvider getItemProvider(PagedGui<?> gui) {
-                        return new ItemBuilder(Material.ARROW).setDisplayName("§eNext Page");
+                        return new ItemBuilder(Material.ARROW).setDisplayName(mmName("<yellow>Next Page"));
                     }
                 })
                 .setContent(items));
@@ -76,12 +80,14 @@ public class KoidexMenu {
     }
 
     private Item discoveredItem(FishSpecies species) {
+        // species.getDisplayName() is admin-set free text - placeholder, not straight into the
+        // template (same reasoning as everywhere else it's rendered).
         ItemBuilder builder = new ItemBuilder(species.getMaterial())
-                .setDisplayName("§f" + species.getDisplayName())
-                .addLoreLines(
-                        "§7Rarity: §f" + species.getRarity().name(),
-                        "§7Category: §f" + species.getCategory().name()
-                );
+                .setDisplayName(mmName("<white><name>", Placeholder.unparsed("name", species.getDisplayName())))
+                .addLoreLines(mmLore(
+                        "<gray>Rarity: <white>" + species.getRarity().name(),
+                        "<gray>Category: <white>" + species.getCategory().name()
+                ));
         if (species.getCustomModelData() > 0) {
             builder.setCustomModelData(species.getCustomModelData());
         }
@@ -90,8 +96,8 @@ public class KoidexMenu {
 
     private Item undiscoveredItem() {
         ItemBuilder builder = new ItemBuilder(Material.GRAY_DYE)
-                .setDisplayName("§7???")
-                .addLoreLines("§8Not yet discovered");
+                .setDisplayName(mmName("<gray>???"))
+                .addLoreLines(mmLore("<dark_gray>Not yet discovered"));
         return new SimpleItem(builder);
     }
 }

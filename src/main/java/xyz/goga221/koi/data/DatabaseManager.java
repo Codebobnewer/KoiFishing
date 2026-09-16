@@ -10,26 +10,39 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
- * Owns the SQLite connection pool backing catch history / leaderboard storage.
+ * Owns the SQLite connection pool backing catch history / leaderboard storage. Startup and
+ * shutdown are both bounded, so a stalled/unreachable database (a locked file, a hung disk)
+ * can't hang the whole server's boot or {@code /stop} sequence indefinitely.
  */
 public class DatabaseManager {
 
+    private static final long CLOSE_TIMEOUT_MILLIS = 5000L;
+
+    private final Logger logger;
     private final HikariDataSource dataSource;
     @Getter
     private final CatchRepository catchRepository;
 
     public DatabaseManager(KoiPlugin plugin) {
+        this.logger = plugin.getLogger();
         File dbFile = new File(plugin.getDataFolder(), plugin.getConfigManager().getDatabaseFileName());
 
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:sqlite:" + dbFile.getAbsolutePath());
         config.setMaximumPoolSize(1); // SQLite is single-writer
+        // A local SQLite file should connect near-instantly; a stall means something's actually
+        // wrong (a locked file, a hung disk). Fail fast instead of hanging server startup for
+        // Hikari's 30s default.
+        config.setConnectionTimeout(8000L);
+        config.setInitializationFailTimeout(8000L);
 
         this.dataSource = new HikariDataSource(config);
         migrate();
-        this.catchRepository = new CatchRepository(this, plugin.getLogger());
+        this.catchRepository = new CatchRepository(this, logger);
     }
 
     public Connection getConnection() throws SQLException {
@@ -77,9 +90,32 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Closes the connection pool with a hard time budget. HikariCP's own close() waits for any
+     * checked-out connection to be returned before it can finish - if a query is genuinely
+     * stuck, that wait can be unbounded, which would hang the whole server's shutdown since
+     * Paper/Folia waits for every plugin's onDisable to return before it can exit. Closing on a
+     * daemon thread and giving up after a few seconds means a stalled database can, at worst,
+     * leak that one connection rather than block the server from stopping.
+     */
     public void close() {
-        if (dataSource != null && !dataSource.isClosed()) {
-            dataSource.close();
+        if (dataSource == null || dataSource.isClosed()) {
+            return;
+        }
+
+        Thread closer = new Thread(dataSource::close, "Koi-DatabaseManager-close");
+        closer.setDaemon(true);
+        closer.start();
+
+        try {
+            closer.join(TimeUnit.MILLISECONDS.toMillis(CLOSE_TIMEOUT_MILLIS));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        if (closer.isAlive()) {
+            logger.warning("Koi's database connection pool didn't close within "
+                    + CLOSE_TIMEOUT_MILLIS + "ms (looks stalled) - continuing shutdown anyway.");
         }
     }
 }
