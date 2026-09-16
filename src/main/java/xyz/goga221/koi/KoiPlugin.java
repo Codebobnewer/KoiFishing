@@ -46,6 +46,12 @@ public final class KoiPlugin extends JavaPlugin {
         RodItems.registerRecipes(this);
         BaitItems.registerRecipes(this);
 
+        // Must happen synchronously, inline here - Folia's CommandAPI integration refuses to
+        // register commands once the server is done starting, which includes anything scheduled
+        // even one tick later (e.g. via the global region scheduler). CommandAPI runs as its own
+        // separate plugin (see pom.xml/plugin.yml - it's `provided` scope here, not shaded, so we
+        // never call CommandAPI.onLoad/onEnable ourselves); `depend: [CommandAPI]` guarantees its
+        // onEnable has already finished by the time ours runs.
         new KoiCommand(this).register();
     }
 
