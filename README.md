@@ -54,20 +54,17 @@ tiers, bait, a personal collection book, and server-wide tournaments.
 ## Requirements
 
 - Java 21
+- Maven
 - [CommandAPI](https://commandapi.jorel.dev/) installed as a separate plugin on the server
   (Koi depends on it but doesn't shade it)
 - A Folia or Paper 1.21.11 server
 
 ## Building
 
-The Maven wrapper is checked in, so no local Maven install is required:
+Requires Maven installed locally:
 
 ```bash
-./mvnw package        # macOS/Linux
-```
-
-```powershell
-mvnw.cmd package      # Windows
+mvn package
 ```
 
 The shaded jar lands at `target/Koi-1.0.0.jar`. Drop it into the server's `plugins/` folder
