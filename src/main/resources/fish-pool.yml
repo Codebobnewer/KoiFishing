@@ -7,6 +7,10 @@
 # without one fall back to fishing.default-catch-sound in config.yml. vanilla-loot: true entries
 # are only rolled while fishing.vanilla-loot-enabled is on in config.yml.
 #
+# favored-baits is a soft boost (1.5x catch weight when fishing with one of these bait ids, on
+# top of whatever that bait's own favored-rarities potency already applies) - accepts any bait id
+# from bait-types.yml, still catchable with other bait or none at all.
+#
 # favored-biomes is a soft boost (1.5x catch weight in those biomes, still catchable elsewhere).
 # whitelisted-biomes is a hard allow-list - if set, this species can ONLY be caught in these
 # biomes and is excluded everywhere else. Both accept any biome key: vanilla ones like

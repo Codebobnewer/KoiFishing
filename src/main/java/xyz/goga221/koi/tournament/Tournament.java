@@ -22,8 +22,12 @@ public class Tournament {
     private final long endTimeMillis;
     private final Map<UUID, FishRarity> bestByPlayer = new ConcurrentHashMap<>();
 
-    private UUID leaderId;
-    private FishRarity leaderRarity;
+    // volatile: recordCatch() is synchronized for its check-then-set, but these are also read
+    // unsynchronized from other threads (TournamentManager#endActiveTournament, /koi tournament
+    // status) - without volatile there's no happens-before edge guaranteeing those reads see the
+    // latest write.
+    private volatile UUID leaderId;
+    private volatile FishRarity leaderRarity;
 
     @Setter
     private MyScheduledTask endTask;

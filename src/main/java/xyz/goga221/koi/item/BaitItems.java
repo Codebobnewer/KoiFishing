@@ -40,10 +40,16 @@ public final class BaitItems {
 
     /**
      * Registers a crafting recipe for every type that declares a {@code craft-material} in
-     * {@code bait-types.yml}.
+     * {@code bait-types.yml}. Safe to call again after {@code /koi reload} (removes any stale
+     * recipe under the same key first, since {@code Bukkit.addRecipe} won't overwrite an
+     * already-registered key) - must run on the global region thread, not off-thread with the
+     * rest of a reload's YAML reads.
      */
     public static void registerRecipes(JavaPlugin plugin) {
         for (BaitType type : KoiPlugin.getBaitTypePool().getTypes()) {
+            NamespacedKey key = new NamespacedKey(plugin, "bait_" + type.getId().toLowerCase(Locale.ROOT));
+            Bukkit.removeRecipe(key);
+
             if (type.getCraftMaterial() == null) {
                 continue;
             }
@@ -55,7 +61,6 @@ public final class BaitItems {
                 continue;
             }
 
-            NamespacedKey key = new NamespacedKey(plugin, "bait_" + type.getId().toLowerCase(Locale.ROOT));
             ShapedRecipe recipe = new ShapedRecipe(key, result);
             recipe.shape("MMM", "MFM", "MMM");
             recipe.setIngredient('M', type.getCraftMaterial());

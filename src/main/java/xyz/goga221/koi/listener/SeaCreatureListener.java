@@ -27,11 +27,11 @@ public class SeaCreatureListener implements Listener {
             return;
         }
 
-        event.getDrops().clear();
-        event.setDroppedExp(0);
-
         Player killer = entity.getKiller();
         if (killer == null) {
+            // Died to something other than a player (lava, void, another mob, etc.) - no Koi
+            // reward to give, so leave its vanilla drops/exp alone instead of clearing them for
+            // nothing.
             return;
         }
 
@@ -39,6 +39,9 @@ public class SeaCreatureListener implements Listener {
         if (creature == null) {
             return;
         }
+
+        event.getDrops().clear();
+        event.setDroppedExp(0);
 
         String rodTierId = SeaCreatureKeys.rodTierIdOf(entity);
         RodTier rodTier = rodTierId == null ? null : KoiPlugin.getRodTierPool().findTier(rodTierId).orElse(null);

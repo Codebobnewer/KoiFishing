@@ -53,6 +53,19 @@ public final class TycheIntegration {
         }
     }
 
+    /**
+     * Whether a {@link xyz.goga221.koi.fishing.SeaCreature} configured with {@code mobId} can
+     * currently be rolled by {@link SeaCreaturePool#roll()} - true if Tyche isn't installed at
+     * all (the vanilla {@code entityType} fallback in {@link xyz.goga221.koi.fishing.FishManager
+     * #spawnSeaCreature} always works, per this project's soft-dependency contract) or if it is
+     * installed and the mob id still resolves. False only when Tyche is installed but the
+     * specific mob id doesn't exist (e.g. deleted in Tyche after {@code sea-creatures.yml} was
+     * last edited) - rolling that would fail to spawn anything at all.
+     */
+    public static boolean canSpawn(String mobId) {
+        return !isPluginPresent() || mobExists(mobId);
+    }
+
     private static boolean isPluginPresent() {
         return KoiPlugin.getInstance().getServer().getPluginManager().getPlugin("Tyche") != null;
     }

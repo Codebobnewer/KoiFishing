@@ -47,10 +47,16 @@ public final class RodItems {
     /**
      * Registers a crafting recipe for every tier that declares an {@code upgrades-from} tier and
      * {@code upgrade-material} in {@code rod-tiers.yml}. Tiers with neither (e.g. a starting
-     * tier handed out some other way) get no recipe.
+     * tier handed out some other way) get no recipe. Safe to call again after {@code /koi
+     * reload} (removes any stale recipe under the same key first, since {@code Bukkit.addRecipe}
+     * won't overwrite an already-registered key) - must run on the global region thread, not
+     * off-thread with the rest of a reload's YAML reads.
      */
     public static void registerRecipes(JavaPlugin plugin) {
         for (RodTier tier : KoiPlugin.getRodTierPool().getTiers()) {
+            NamespacedKey key = new NamespacedKey(plugin, "rod_upgrade_" + tier.getId().toLowerCase(Locale.ROOT));
+            Bukkit.removeRecipe(key);
+
             if (tier.getUpgradesFromId() == null || tier.getUpgradeMaterial() == null) {
                 continue;
             }
@@ -64,7 +70,6 @@ public final class RodItems {
                 continue;
             }
 
-            NamespacedKey key = new NamespacedKey(plugin, "rod_upgrade_" + tier.getId().toLowerCase(Locale.ROOT));
             ShapedRecipe recipe = new ShapedRecipe(key, toItem);
             recipe.shape(" R ", " U ", "   ");
             recipe.setIngredient('R', new RecipeChoice.ExactChoice(fromItem));

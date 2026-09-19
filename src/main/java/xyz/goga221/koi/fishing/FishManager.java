@@ -109,6 +109,12 @@ public class FishManager {
         }
         hook.setWaitTime(rodTier.getMinHookTicks(), rodTier.getMaxHookTicks());
 
+        // Consumed here, at cast time, even though whether it pays off isn't known until the
+        // bite resolves (see rollNormalBite) - deferring this to bite time let a player swap the
+        // bait out of their off-hand the instant after casting, keeping its roll-weighting boost
+        // (captured below into CastContext regardless) while paying nothing for it, since nothing
+        // polices the off-hand during the plain wait-for-a-bite window the way an active reel
+        // session's own interrupt listeners police the rod. "Per cast" has to mean "at cast time."
         ItemStack offHand = player.getInventory().getItemInOffHand();
         BaitType bait = BaitItems.typeOf(offHand);
         if (bait != null) {
@@ -161,6 +167,10 @@ public class FishManager {
                 ? pool.rollWithinRarity(forcedRarity).orElse(null)
                 : pool.roll(context.getBait(), context.getBiomeKey(), context.getRodTier()).orElse(null);
         if (species == null) {
+            // Nothing rolled (empty/misconfigured pool, or every species excluded by a biome
+            // whitelist here) - bait was already spent at cast time regardless (see handleCast),
+            // so at least tell the player rather than leaving the bite silently do nothing.
+            player.sendMessage(MM.deserialize("<gray>Nothing bites here.</gray>"));
             return;
         }
 
@@ -333,7 +343,8 @@ public class FishManager {
             player.sendMessage(MM.deserialize("<red>Something went wrong landing that catch - let an admin know.</red>"));
             return;
         }
-        player.getInventory().addItem(item);
+        player.getInventory().addItem(item).values()
+                .forEach(leftover -> player.getWorld().dropItemNaturally(player.getLocation(), leftover));
 
         FishCatch catchRecord = new FishCatch(player.getUniqueId(), vulcanId, rarity, rodTier, baitId,
                 System.currentTimeMillis(), false);

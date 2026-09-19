@@ -52,7 +52,7 @@ public class SeaCreaturePool {
      */
     public Optional<SeaCreature> roll() {
         List<SeaCreature> spawnable = creatures.stream()
-                .filter(creature -> TycheIntegration.mobExists(creature.getTycheMobId()))
+                .filter(creature -> TycheIntegration.canSpawn(creature.getTycheMobId()))
                 .toList();
         return WeightedRoll.roll(spawnable, SeaCreature::getSpawnWeight);
     }

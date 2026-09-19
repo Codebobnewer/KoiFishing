@@ -32,6 +32,12 @@ public class FishSpecies implements Catchable {
      */
     private boolean vanillaLoot;
 
+    /**
+     * Bait ids (see {@link xyz.goga221.koi.item.BaitType#getId()}) that give this species a soft
+     * weight boost (1.5x, same as {@link #favoredBiomes}) - see {@link FishPool#roll}. Independent
+     * of a bait's own {@link xyz.goga221.koi.item.BaitType#getFavoredRarities()} potency boost;
+     * both can apply to the same catch.
+     */
     private final Set<String> favoredBaitIds = new HashSet<>();
     private final Set<String> favoredBiomes = new HashSet<>();
 

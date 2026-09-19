@@ -16,10 +16,10 @@ import org.bukkit.entity.EntityType;
  * Unlike {@link FishSpecies}, a sea creature has no Vulcan item of its own: it's identified by
  * its own free-form {@link #id}, and its appearance/attributes/equipment/AI/loot all come from
  * {@link #tycheMobId} - a Tyche-authored mob (see {@link TycheIntegration}), summoned by
- * {@link FishManager#spawnSeaCreature}. A creature is only rolled by
- * {@link SeaCreaturePool#roll()} once its Tyche mob actually exists - see
- * {@link TycheIntegration#mobExists}. {@link #entityType} is the vanilla-mob fallback used only
- * if Tyche becomes unavailable after that check (e.g. removed from the server at runtime).
+ * {@link FishManager#spawnSeaCreature}. {@link SeaCreaturePool#roll()} only excludes a creature
+ * when Tyche is installed but the specific mob id doesn't resolve (a broken reference) - see
+ * {@link TycheIntegration#canSpawn}; with Tyche absent entirely, or once it drops out between the
+ * roll and the actual spawn, {@link #entityType} is the vanilla-mob fallback used instead.
  * Mutable and admin-editable at runtime via the sea creature editor menu, persisted to
  * {@code sea-creatures.yml}.
  */

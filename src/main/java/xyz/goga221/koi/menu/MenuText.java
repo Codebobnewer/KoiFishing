@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
@@ -121,13 +123,30 @@ final class MenuText {
     }
 
     /**
+     * Single background thread every catalog save goes through - {@code save} lambdas read the
+     * live pool lazily (at execution time, not when scheduled), so if two saves for the same
+     * file were ever running concurrently on different threads, disk write completion order
+     * wouldn't be guaranteed to match edit order: an older in-flight save finishing after a
+     * newer one would silently overwrite it, quietly reverting a just-made edit on disk (still
+     * correct in memory, but gone after the next reload/restart - a real risk with two admins
+     * editing the same catalog, or several rapid edits queuing overlapping saves). A single
+     * thread makes every save run strictly one at a time, in submission order, so whichever one
+     * runs last always reflects every edit made before it. Daemon so it never blocks JVM exit.
+     */
+    private static final ExecutorService SAVE_EXECUTOR = Executors.newSingleThreadExecutor(runnable -> {
+        Thread thread = new Thread(runnable, "Koi-catalog-save");
+        thread.setDaemon(true);
+        return thread;
+    });
+
+    /**
      * Reopens the calling menu for {@code player} immediately (the in-memory pool is already
      * mutated, so there's nothing to wait on) and saves asynchronously - file I/O shouldn't run
      * on the region thread. Shared by every catalog editor menu's click handlers and add-wizards.
      */
     static void persistAndRefresh(Player player, Runnable reopen, Runnable save) {
         reopen.run();
-        KoiPlugin.getScheduler().runTaskAsynchronously(save);
+        SAVE_EXECUTOR.execute(save);
     }
 
     /**

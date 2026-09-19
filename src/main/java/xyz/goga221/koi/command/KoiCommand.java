@@ -85,7 +85,8 @@ public class KoiCommand {
                     }
 
                     item.setAmount(Math.max(1, Math.min(64, amount)));
-                    target.getInventory().addItem(item);
+                    target.getInventory().addItem(item).values()
+                            .forEach(leftover -> target.getWorld().dropItemNaturally(target.getLocation(), leftover));
                     player.sendMessage(MM.deserialize("<green>Gave <target> " + amount + "x <id></green>",
                             Placeholder.unparsed("target", target.getName()),
                             Placeholder.unparsed("id", id)));
@@ -97,7 +98,10 @@ public class KoiCommand {
                 .withPermission(ADMIN_PERMISSION)
                 .executesPlayer((player, args) -> {
                     // Five independent YAML reads - off the calling thread so this admin command
-                    // can't hitch a region for it, then hop back to the player's own thread to
+                    // can't hitch a region for it, then hop onto the global region thread to
+                    // re-register rod/bait crafting recipes (Bukkit.addRecipe isn't tied to any
+                    // one player, and a reloaded upgrade-material/craft-material wouldn't take
+                    // effect until a restart otherwise), then onto the player's own thread to
                     // confirm (mirrors menu.KoidexMenu#open's async-read/sync-respond pattern).
                     KoiPlugin.getScheduler().runTaskAsynchronously(() -> {
                         KoiPlugin.getConfigManager().reload();
@@ -105,8 +109,12 @@ public class KoiCommand {
                         KoiPlugin.getBaitTypePool().reload();
                         KoiPlugin.getSeaCreaturePool().reload();
                         KoiPlugin.getFishManager().reload();
-                        KoiPlugin.getScheduler().runTask(player, () -> player.sendMessage(
-                                MM.deserialize("<green>Koi configuration, rod tiers, bait types, sea creatures, and fish pool reloaded.</green>")));
+                        KoiPlugin.getScheduler().runTask(() -> {
+                            RodItems.registerRecipes(KoiPlugin.getInstance());
+                            BaitItems.registerRecipes(KoiPlugin.getInstance());
+                            KoiPlugin.getScheduler().runTask(player, () -> player.sendMessage(
+                                    MM.deserialize("<green>Koi configuration, rod tiers, bait types, sea creatures, and fish pool reloaded.</green>")));
+                        });
                     });
                 });
     }
@@ -130,7 +138,8 @@ public class KoiCommand {
                     boolean enabled = state.equals("enable");
                     KoiPlugin.getConfigManager().setWorldEnabled(world.getName(), enabled);
                     player.sendMessage(MM.deserialize("<green>Koi fishing " + (enabled ? "enabled" : "disabled")
-                            + " in " + world.getName() + "</green>"));
+                                    + " in <world></green>",
+                            Placeholder.unparsed("world", world.getName())));
                 });
     }
 

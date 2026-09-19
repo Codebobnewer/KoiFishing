@@ -36,8 +36,13 @@ public class ChatInputPrompt implements Listener {
      * or a crafted reply could inject MiniMessage tags into a message shown to other players.
      */
     public void await(Player player, String promptText, Consumer<String> onInput) {
+        Consumer<String> previous = pending.put(player.getUniqueId(), onInput);
+        if (previous != null) {
+            // Silently swapping it out would leave whichever wizard set it up waiting forever
+            // for a reply that's now bound to a different question instead.
+            player.sendMessage(MM.deserialize("<red>Your previous prompt was cancelled.</red>"));
+        }
         player.sendMessage(MM.deserialize("<yellow>" + promptText + "</yellow> <gray>(type 'cancel' to abort)</gray>"));
-        pending.put(player.getUniqueId(), onInput);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -52,7 +57,7 @@ public class ChatInputPrompt implements Listener {
         String message = PlainTextComponentSerializer.plainText().serialize(event.message());
 
         KoiPlugin.getScheduler().runTask(player, () -> {
-            if (message.equalsIgnoreCase(CANCEL_KEYWORD)) {
+            if (message.trim().equalsIgnoreCase(CANCEL_KEYWORD)) {
                 player.sendMessage(MM.deserialize("<red>Cancelled.</red>"));
                 return;
             }

@@ -7,7 +7,7 @@
 ![Vulcan](https://img.shields.io/badge/requires-Vulcan-lightgrey)
 ![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-inactive)
 
-A custom fishing plugin for **Folia + Paper 1.21.11**, built in strict Java 21 OOP. Replaces
+A custom fishing plugin for **Folia 1.21.11**, built in strict Java 21 OOP. Replaces
 vanilla fishing with a click-reveal reel-in minigame, rarity-tiered fish/treasure/junk, rod
 tiers, bait, rare mob "sea creature" encounters, a personal collection book, and server-wide
 tournaments — all authored as **Vulcan** items, so every catchable's appearance and rarity live
@@ -96,26 +96,8 @@ Vulcan, since they're never held as an item.
 
 ## Building
 
-Vulcan, Chronos, and Tyche aren't published to a remote repository — install them to your local
-`~/.m2` first, from sibling checkouts of this repo's parent directory:
-
-```bash
-cd ../JeraUtils-master && mvn install
-cd ../ExperienceTailor-main && mvn install
-cd ../Vulcan-main && mvn install
-cd ../Chronos && mvn install               # optional - only if you want Chronos integration
-cd ../Stash-1.21.11-Reboot && mvn install  # optional - only if you want Tyche integration
-cd ../Tyche-1.21.11-Reboot && mvn install  # optional - only if you want Tyche integration
-```
-
-Then build Koi itself:
-
-```bash
-mvn package
-```
-
-The shaded jar lands at `target/Koi-1.0.0.jar`. Drop it into the server's `plugins/` folder
-alongside CommandAPI and Vulcan (and Chronos/Tyche, if you installed them).
+Vulcan and Tyche aren't published to a remote repository — install them to your local
+`~/.m2` first.
 
 ## Commands
 
@@ -170,5 +152,3 @@ Strict OOP, one concern per package:
 | `util` | Small shared helpers (weighted random rolls) |
 
 ---
-
-See [`CLAUDE.md`](CLAUDE.md) for the full guidance this project was built against.

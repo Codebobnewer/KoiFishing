@@ -70,6 +70,9 @@ public class FishPool {
         if (bait != null && bait.getFavoredRarities().contains(rarity)) {
             weight *= bait.getPotency();
         }
+        if (bait != null && fish.getFavoredBaitIds().contains(bait.getId())) {
+            weight *= 1.5;
+        }
         if (biomeKey != null && fish.getFavoredBiomes().contains(biomeKey)) {
             weight *= 1.5;
         }
