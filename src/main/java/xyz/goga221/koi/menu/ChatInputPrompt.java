@@ -15,22 +15,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /**
- * Reusable "await the player's next chat line" helper, used by {@link FishEditorMenu}'s
- * add-fish wizard for free-text fields InvUI has no dedicated input widget for.
+ * Reusable "await the player's next chat line" helper, used by the catalog editor menus'
+ * (fish/rod-tier/bait-type/sea-creature) add wizards for free-text fields InvUI has no
+ * dedicated input widget for.
  */
 public class ChatInputPrompt implements Listener {
 
     private static final MiniMessage MM = MiniMessage.miniMessage();
     private static final String CANCEL_KEYWORD = "cancel";
 
-    private final KoiPlugin plugin;
     private final Map<UUID, Consumer<String>> pending = new ConcurrentHashMap<>();
 
-    public ChatInputPrompt(KoiPlugin plugin) {
-        this.plugin = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    public ChatInputPrompt() {
+        KoiPlugin.getInstance().getServer().getPluginManager().registerEvents(this, KoiPlugin.getInstance());
     }
 
+    /**
+     * {@code onInput} receives raw, untrusted chat text - callers must pass it through
+     * {@code Placeholder.unparsed} rather than splicing it into a MiniMessage template string,
+     * or a crafted reply could inject MiniMessage tags into a message shown to other players.
+     */
     public void await(Player player, String promptText, Consumer<String> onInput) {
         player.sendMessage(MM.deserialize("<yellow>" + promptText + "</yellow> <gray>(type 'cancel' to abort)</gray>"));
         pending.put(player.getUniqueId(), onInput);
@@ -47,7 +51,7 @@ public class ChatInputPrompt implements Listener {
         Player player = event.getPlayer();
         String message = PlainTextComponentSerializer.plainText().serialize(event.message());
 
-        plugin.getScheduler().runTask(player, () -> {
+        KoiPlugin.getScheduler().runTask(player, () -> {
             if (message.equalsIgnoreCase(CANCEL_KEYWORD)) {
                 player.sendMessage(MM.deserialize("<red>Cancelled.</red>"));
                 return;

@@ -1,0 +1,22 @@
+# Koi sea creatures - empty by default. Each id here must have a matching Tyche mob (create it in
+# Tyche first) before it can spawn - Tyche owns the mob's appearance/attributes/equipment/loot,
+# this file only owns the encounter's gameplay tuning. A bite has a chance (fishing.sea-creature-chance
+# in config.yml, 0 by default) to instead be a sea creature encounter - two stages: the player
+# reels it in first, exactly like a normal catch (rarity sets how many clicks that takes, same as
+# a fish species' rarity), and landing that spawns the real Tyche mob near them, which must then
+# be killed within despawn-seconds or it escapes. entity-type is only a vanilla fallback used if
+# Tyche is ever unavailable.
+#
+# Example (assumes a Tyche mob "sea_serpent" already exists):
+#
+# creatures:
+#   my_sea_serpent:
+#     tyche-mob-id: sea_serpent
+#     entity-type: DROWNED
+#     rarity: EPIC
+#     max-health: 40.0
+#     spawn-weight: 1.0
+#     despawn-seconds: 30
+#     catch-sound: ENTITY_ELDER_GUARDIAN_CURSE
+
+creatures: {}

@@ -1,0 +1,16 @@
+# Koi rod tiers - empty by default. Each tier here must have a matching Vulcan item authored
+# with /v item create <id> before it can be given, crafted, or fished with - Vulcan owns the
+# item's appearance, this file only owns the gameplay tuning.
+#
+# Example:
+#
+# tiers:
+#   my_iron_rod:
+#     rarity-boost: 0.15       # skews the catch roll toward rarer fish, scaled by the fish's
+#                               # rarity ordinal - 0 does nothing, higher matters more for rarer fish
+#     min-hook-ticks: 80        # wait-for-a-bite window lower bound (vanilla default: 100)
+#     max-hook-ticks: 440       # wait-for-a-bite window upper bound (vanilla default: 600)
+#     upgrades-from: my_wood_rod   # optional - the tier this one is crafted from
+#     upgrade-material: IRON_INGOT # optional - combined with upgrades-from's rod to craft this one
+
+tiers: {}

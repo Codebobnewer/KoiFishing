@@ -1,9 +1,11 @@
 package xyz.goga221.koi.fishing;
 
+import xyz.goga221.koi.KoiPlugin;
 import lombok.Getter;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Color;
+import xyz.tyro.vulcan.items.VulcanItem;
 
 /**
  * Catch rarity tiers. Reeling in a fish clicks through every tier's bars in order, starting
@@ -61,5 +63,20 @@ public enum FishRarity {
             }
         }
         return values()[values().length - 1];
+    }
+
+    /**
+     * Koi's own catch-difficulty rarity, mapped 1:1 by name from a Vulcan item's own rarity
+     * (both use the same six tier names) - shared by every catchable-by-id concept
+     * ({@link FishSpecies}, {@link SeaCreature}) so an admin sets rarity once, in Vulcan's item
+     * editor, rather than keeping it in sync in multiple places. Falls back to {@link #COMMON}
+     * if the Vulcan item hasn't been authored yet.
+     */
+    public static FishRarity fromVulcanItem(String vulcanId) {
+        VulcanItem definition = KoiPlugin.getVulcanApi().getDefinition(vulcanId);
+        if (definition == null) {
+            return COMMON;
+        }
+        return valueOf(definition.getRarity().name());
     }
 }

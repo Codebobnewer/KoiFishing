@@ -1,0 +1,18 @@
+# Koi bait types - empty by default. Each type here must have a matching Vulcan item authored
+# with /v item create <id> before it can be given, crafted, or fished with - Vulcan owns the
+# item's appearance, this file only owns the gameplay tuning.
+#
+# Example:
+#
+# types:
+#   my_worm_bait:
+#     craft-material: STRING     # the raw material surrounding the bait in its crafting recipe
+#                                  # (a 3x3 of this material with nether wart in the middle) -
+#                                  # optional; omit to skip registering a recipe for this bait
+#     potency: 1.4                 # multiplies the weight of favored-rarities species when this
+#                                   # bait is used
+#     favored-rarities:            # which fish rarities this bait skews the catch roll toward
+#       - COMMON
+#       - UNCOMMON
+
+types: {}

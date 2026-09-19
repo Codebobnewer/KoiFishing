@@ -14,5 +14,11 @@ fishing:
   # dropped as-is, e.g. saddles/name tags) can be rolled at all. Off by default.
   vanilla-loot-enabled: false
 
+  # Odds (0.0-1.0) that a bite is a sea creature encounter (see sea-creatures.yml) instead of a
+  # normal fish - reeled in the same as any other catch, then a real mob spawns and must be
+  # killed before it escapes. 0 (default) disables the mechanic entirely even if
+  # sea-creatures.yml has entries.
+  sea-creature-chance: 0.0
+
   minigame:
     tick-period-ticks: 2

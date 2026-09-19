@@ -1,40 +1,32 @@
 package xyz.goga221.koi.item;
 
 import lombok.Getter;
+import lombok.Setter;
+import org.bukkit.Material;
 
 /**
- * Fishing rod tiers. Wood is the vanilla baseline, Koi is the top tier - all tiers reuse
- * {@link org.bukkit.Material#FISHING_ROD}, distinguished by CustomModelData and a PDC tag
- * (see {@link RodItems}). {@link #rarityBoost} skews the catch roll toward rarer fish - it's
- * scaled by the fish's rarity ordinal, so it does nothing for Common and matters most for
- * Mythic. {@link #minHookTicks}/{@link #maxHookTicks} shrink the vanilla wait-for-a-bite window
- * (100-600 ticks / 5-30s by default) - better rods hook faster.
+ * An admin-defined fishing rod tier - the actual ItemStack is a Vulcan item sharing this
+ * {@link #id} (see {@link RodItems}), so an admin must author it with {@code /v item create <id>}
+ * before it can be given, crafted, or fished with. Mutable and persisted to
+ * {@code rod-tiers.yml}. {@link #rarityBoost} skews the catch roll toward rarer fish - scaled by
+ * the fish's rarity ordinal, so it does nothing for Common and matters most for Mythic.
+ * {@link #minHookTicks}/{@link #maxHookTicks} set the wait-for-a-bite window (vanilla default is
+ * 100-600 ticks / 5-30s) - lower values hook faster. An optional
+ * {@link #upgradesFromId}/{@link #upgradeMaterial} pair defines a crafting recipe: this tier is
+ * an upgrade combining that other tier's rod with the given material.
  */
 @Getter
-public enum RodTier {
+@Setter
+public class RodTier {
 
-    WOOD("Wood Rod", 1001, 0.0, 100, 600),
-    IRON("Iron Rod", 1002, 0.15, 80, 440),
-    DIAMOND("Diamond Rod", 1003, 0.35, 55, 280),
-    KOI("Koi Rod", 1004, 0.6, 30, 150);
+    private String id;
+    private double rarityBoost;
+    private int minHookTicks = 100;
+    private int maxHookTicks = 600;
+    private String upgradesFromId;
+    private Material upgradeMaterial;
 
-    private final String displayName;
-    private final int customModelData;
-    private final double rarityBoost;
-    private final int minHookTicks;
-    private final int maxHookTicks;
-
-    RodTier(String displayName, int customModelData, double rarityBoost, int minHookTicks, int maxHookTicks) {
-        this.displayName = displayName;
-        this.customModelData = customModelData;
-        this.rarityBoost = rarityBoost;
-        this.minHookTicks = minHookTicks;
-        this.maxHookTicks = maxHookTicks;
-    }
-
-    public RodTier next() {
-        int nextOrdinal = ordinal() + 1;
-        RodTier[] values = values();
-        return nextOrdinal < values.length ? values[nextOrdinal] : null;
+    public RodTier(String id) {
+        this.id = id;
     }
 }

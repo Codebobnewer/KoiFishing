@@ -13,4 +13,6 @@ public class PlayerFishStats {
     private final UUID playerId;
     private int totalCatches;
     private FishRarity bestRarity;
+    private int seaCreaturesCaught;
+    private int seaCreaturesKilled;
 }

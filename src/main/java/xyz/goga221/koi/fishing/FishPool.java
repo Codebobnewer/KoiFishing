@@ -2,11 +2,12 @@ package xyz.goga221.koi.fishing;
 
 import xyz.goga221.koi.item.BaitType;
 import xyz.goga221.koi.item.RodTier;
+import xyz.goga221.koi.util.WeightedRoll;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Holds all known {@link FishSpecies} and resolves weighted catch rolls, factoring in rarity,
@@ -50,64 +51,32 @@ public class FishPool {
      */
     public Optional<FishSpecies> rollWithinRarity(FishRarity rarity) {
         List<FishSpecies> matches = species.stream().filter(fish -> fish.getRarity() == rarity).toList();
-        if (matches.isEmpty()) {
-            return Optional.empty();
-        }
-
-        double totalWeight = matches.stream().mapToDouble(FishSpecies::getDropWeight).sum();
-        if (totalWeight <= 0.0) {
-            return Optional.of(matches.get(ThreadLocalRandom.current().nextInt(matches.size())));
-        }
-
-        double roll = ThreadLocalRandom.current().nextDouble(totalWeight);
-        double cumulative = 0.0;
-        for (FishSpecies fish : matches) {
-            cumulative += fish.getDropWeight();
-            if (roll < cumulative) {
-                return Optional.of(fish);
-            }
-        }
-        return Optional.of(matches.get(matches.size() - 1));
+        return WeightedRoll.roll(matches, FishSpecies::getDropWeight);
     }
 
     public Optional<FishSpecies> roll(BaitType bait, String biomeKey, RodTier rodTier) {
-        if (species.isEmpty()) {
-            return Optional.empty();
+        return WeightedRoll.roll(species, fish -> weightOf(fish, bait, biomeKey, rodTier));
+    }
+
+    private double weightOf(FishSpecies fish, BaitType bait, String biomeKey, RodTier rodTier) {
+        Set<String> whitelistedBiomes = fish.getWhitelistedBiomes();
+        if (!whitelistedBiomes.isEmpty() && (biomeKey == null || !whitelistedBiomes.contains(biomeKey))) {
+            return 0.0;
         }
 
-        double[] weights = new double[species.size()];
-        double totalWeight = 0.0;
+        FishRarity rarity = fish.getRarity();
+        double weight = rarity.getPoolWeight() * fish.getDropWeight();
 
-        for (int i = 0; i < species.size(); i++) {
-            FishSpecies fish = species.get(i);
-            double weight = fish.getRarity().getPoolWeight() * fish.getDropWeight();
-
-            if (bait != null && bait.getFavoredRarities().contains(fish.getRarity())) {
-                weight *= bait.getPotency();
-            }
-            if (biomeKey != null && fish.getFavoredBiomes().contains(biomeKey)) {
-                weight *= 1.5;
-            }
-            if (rodTier != null) {
-                weight *= 1.0 + rodTier.getRarityBoost() * fish.getRarity().ordinal();
-            }
-
-            weights[i] = weight;
-            totalWeight += weight;
+        if (bait != null && bait.getFavoredRarities().contains(rarity)) {
+            weight *= bait.getPotency();
+        }
+        if (biomeKey != null && fish.getFavoredBiomes().contains(biomeKey)) {
+            weight *= 1.5;
+        }
+        if (rodTier != null) {
+            weight *= 1.0 + rodTier.getRarityBoost() * rarity.ordinal();
         }
 
-        if (totalWeight <= 0.0) {
-            return Optional.empty();
-        }
-
-        double roll = ThreadLocalRandom.current().nextDouble(totalWeight);
-        double cumulative = 0.0;
-        for (int i = 0; i < species.size(); i++) {
-            cumulative += weights[i];
-            if (roll < cumulative) {
-                return Optional.of(species.get(i));
-            }
-        }
-        return Optional.of(species.get(species.size() - 1));
+        return weight;
     }
 }

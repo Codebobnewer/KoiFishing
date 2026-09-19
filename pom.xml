@@ -20,7 +20,7 @@
         <commandapi.version>12.0.0</commandapi.version>
         <invui.version>1.49</invui.version>
         <universalscheduler.version>0.1.7</universalscheduler.version>
-        <lombok.version>1.18.36</lombok.version>
+        <lombok.version>1.18.48</lombok.version>
         <hikaricp.version>5.1.0</hikaricp.version>
         <sqlite-jdbc.version>3.46.1.3</sqlite-jdbc.version>
 
@@ -56,6 +56,43 @@
             <groupId>dev.jorel</groupId>
             <artifactId>commandapi-paper-core</artifactId>
             <version>${commandapi.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Chronos calendar API; provided by the standalone Chronos plugin on the server if
+             present (soft dependency - Koi's tournament scheduling degrades gracefully without
+             it, see tournament.ChronosIntegration). Not published to a remote repo - install it
+             locally first: cd ../Chronos && mvn install -->
+        <dependency>
+            <groupId>me.goga221</groupId>
+            <artifactId>chronos</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Vulcan custom item framework; provided by the standalone Vulcan plugin on the
+             server, which Koi now hard-depends on (see plugin.yml `depend`) - rods, bait, and
+             fish species are all Vulcan-authored items rolled via VulcanAPI, see item.VulcanItems.
+             Not published to a remote repo - install it locally first:
+             cd ../JeraUtils-master && mvn install
+             cd ../ExperienceTailor-main && mvn install
+             cd ../Vulcan-main && mvn install -->
+        <dependency>
+            <groupId>xyz.tyro</groupId>
+            <artifactId>Vulcan</artifactId>
+            <version>0.1.3</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Tyche custom mob framework; provided by the standalone Tyche plugin on the server if
+             present (soft dependency - sea creatures fall back to a vanilla EntityType without it,
+             see fishing.TycheIntegration). Not published to a remote repo - install it locally
+             first: cd ../Stash-1.21.11-Reboot && mvn install
+             cd ../Tyche-1.21.11-Reboot && mvn install -->
+        <dependency>
+            <groupId>xyz.lordrektor</groupId>
+            <artifactId>tyche</artifactId>
+            <version>1.6.0</version>
             <scope>provided</scope>
         </dependency>
 
@@ -180,6 +217,10 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>module-info.class</exclude>
+                                        <exclude>META-INF/versions/*/module-info.class</exclude>
                                     </excludes>
                                 </filter>
                             </filters>

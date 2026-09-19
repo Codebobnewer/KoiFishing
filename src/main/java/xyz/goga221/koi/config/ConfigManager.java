@@ -15,19 +15,16 @@ import java.util.stream.Collectors;
  */
 public class ConfigManager {
 
-    private final KoiPlugin plugin;
-
-    public ConfigManager(KoiPlugin plugin) {
-        this.plugin = plugin;
-        plugin.saveDefaultConfig();
+    public ConfigManager() {
+        KoiPlugin.getInstance().saveDefaultConfig();
     }
 
     public void reload() {
-        plugin.reloadConfig();
+        KoiPlugin.getInstance().reloadConfig();
     }
 
     private FileConfiguration config() {
-        return plugin.getConfig();
+        return KoiPlugin.getInstance().getConfig();
     }
 
     public boolean isWorldEnabled(String worldName) {
@@ -43,7 +40,7 @@ public class ConfigManager {
             disabled.add(key);
         }
         config().set("fishing.disabled-worlds", disabled);
-        plugin.saveConfig();
+        KoiPlugin.getInstance().saveConfig();
     }
 
     private List<String> disabledWorlds() {
@@ -62,11 +59,8 @@ public class ConfigManager {
 
     public Sound getDefaultCatchSound() {
         String name = config().getString("fishing.default-catch-sound", "ENTITY_PLAYER_LEVELUP");
-        try {
-            return Sound.valueOf(name.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException e) {
-            return Sound.ENTITY_PLAYER_LEVELUP;
-        }
+        Sound sound = ConfigLoadSupport.resolveSound(name);
+        return sound != null ? sound : Sound.ENTITY_PLAYER_LEVELUP;
     }
 
     /**
@@ -75,5 +69,13 @@ public class ConfigManager {
      */
     public boolean isVanillaLootEnabled() {
         return config().getBoolean("fishing.vanilla-loot-enabled", false);
+    }
+
+    /**
+     * Odds (0.0-1.0) that a bite is a {@link xyz.goga221.koi.fishing.SeaCreature} encounter
+     * instead of a normal fish - see {@link xyz.goga221.koi.fishing.FishManager#handleBite}.
+     */
+    public double getSeaCreatureChance() {
+        return config().getDouble("fishing.sea-creature-chance", 0.0);
     }
 }

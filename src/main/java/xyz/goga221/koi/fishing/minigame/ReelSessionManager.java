@@ -2,8 +2,8 @@ package xyz.goga221.koi.fishing.minigame;
 
 import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 import xyz.goga221.koi.KoiPlugin;
+import xyz.goga221.koi.fishing.Catchable;
 import xyz.goga221.koi.fishing.FishRarity;
-import xyz.goga221.koi.fishing.FishSpecies;
 import xyz.goga221.koi.item.RodTier;
 import org.bukkit.Sound;
 import org.bukkit.entity.FishHook;
@@ -21,13 +21,8 @@ import java.util.function.BiConsumer;
  */
 public class ReelSessionManager {
 
-    private final KoiPlugin plugin;
     private final Map<UUID, CastContext> pendingCasts = new ConcurrentHashMap<>();
     private final Map<UUID, ReelSession> activeSessions = new ConcurrentHashMap<>();
-
-    public ReelSessionManager(KoiPlugin plugin) {
-        this.plugin = plugin;
-    }
 
     public void prepareCast(UUID playerId, CastContext context) {
         pendingCasts.put(playerId, context);
@@ -58,14 +53,14 @@ public class ReelSessionManager {
         return Optional.of(session);
     }
 
-    public void startSession(Player player, FishSpecies species, RodTier rodTier, String baitId, FishHook hook,
+    public void startSession(Player player, Catchable catchable, RodTier rodTier, String baitId, FishHook hook,
                               BiConsumer<Player, ReelSession> onResolve) {
-        ReelSession session = new ReelSession(player.getUniqueId(), species, rodTier, baitId, hook);
+        ReelSession session = new ReelSession(player.getUniqueId(), catchable, rodTier, baitId, hook);
         activeSessions.put(player.getUniqueId(), session);
         ClickBarRenderer.render(player, session);
 
-        long period = Math.max(1L, plugin.getConfigManager().getTickPeriodTicks());
-        MyScheduledTask task = plugin.getScheduler().runTaskTimer(player, () -> tick(player, onResolve), period, period);
+        long period = Math.max(1L, KoiPlugin.getConfigManager().getTickPeriodTicks());
+        MyScheduledTask task = KoiPlugin.getScheduler().runTaskTimer(player, () -> tick(player, onResolve), period, period);
         session.setTask(task);
     }
 

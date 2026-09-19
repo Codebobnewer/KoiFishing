@@ -39,3 +39,7 @@ If a database is needed:
 ## Author preferences
 
 - Refer to the user as goga221.
+
+## Gotchas
+
+- Koi's recurring tournament schedule (`tournament.TournamentManager.startRepeating`/`checkRecurring`) needs to advertise its *next* occurrence on Chronos's calendar in advance, not just register a "happening now" entry once the tournament actually starts. Doing that requires converting a raw absolute game-time `long` (the computed next-trigger instant) back into a year/month/day/hour/minute Chronos can register. `ChronosAPI` didn't expose that conversion until Chronos added `getDateTimeAt(long totalGameSeconds)` for exactly this — `ChronosIntegration.registerAt(...)` wraps it. If Koi is ever rebuilt against an older Chronos artifact that lacks `getDateTimeAt`, this will fail to compile; that method needs to exist on the installed Chronos.

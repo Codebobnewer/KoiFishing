@@ -1,62 +1,65 @@
 package xyz.goga221.koi.item;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import xyz.goga221.koi.KoiPlugin;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.List;
 import java.util.Locale;
 
 /**
- * Builds and identifies {@link BaitType} {@link ItemStack}s via a {@code koi:bait_id} PDC tag.
+ * Resolves admin-defined {@link BaitType}s as Vulcan items sharing their id - see
+ * {@link RodItems} for the same pattern applied to rods.
  */
 public final class BaitItems {
 
     private BaitItems() {
     }
 
+    /**
+     * @return the rolled Vulcan item, or {@code null} if the type hasn't been authored in Vulcan yet
+     */
     public static ItemStack create(BaitType type) {
-        ItemStack item = new ItemStack(type.getMaterial());
-        ItemMeta meta = item.getItemMeta();
-        meta.setCustomModelData(type.getCustomModelData());
-        meta.displayName(Component.text(type.getDisplayName(), NamedTextColor.GREEN)
-                .decoration(TextDecoration.ITALIC, false));
-        meta.lore(List.of(Component.text("Koi bait", NamedTextColor.GRAY)
-                .decoration(TextDecoration.ITALIC, false)));
-        meta.getPersistentDataContainer().set(KoiKeys.BAIT_ID, PersistentDataType.STRING, type.name());
-        item.setItemMeta(meta);
-        return item;
+        return KoiPlugin.getVulcanApi().getItem(type.getId());
     }
 
     public static BaitType typeOf(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) {
+        if (item == null) {
             return null;
         }
-        String tag = item.getItemMeta().getPersistentDataContainer().get(KoiKeys.BAIT_ID, PersistentDataType.STRING);
-        if (tag == null) {
+
+        String vulcanId = KoiPlugin.getVulcanApi().getItemId(item);
+        if (vulcanId == null) {
             return null;
         }
-        try {
-            return BaitType.valueOf(tag);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+        return KoiPlugin.getBaitTypePool().findType(vulcanId).orElse(null);
     }
 
+    /**
+     * Registers a crafting recipe for every type that declares a {@code craft-material} in
+     * {@code bait-types.yml}.
+     */
     public static void registerRecipes(JavaPlugin plugin) {
-        for (BaitType type : BaitType.values()) {
-            NamespacedKey key = new NamespacedKey(plugin, "bait_" + type.name().toLowerCase(Locale.ROOT));
-            ShapedRecipe recipe = new ShapedRecipe(key, create(type));
+        for (BaitType type : KoiPlugin.getBaitTypePool().getTypes()) {
+            if (type.getCraftMaterial() == null) {
+                continue;
+            }
+
+            ItemStack result = create(type);
+            if (result == null) {
+                plugin.getLogger().warning("Skipping " + type.getId() + " bait recipe - author "
+                        + type.getId() + " in Vulcan first (/v item create).");
+                continue;
+            }
+
+            NamespacedKey key = new NamespacedKey(plugin, "bait_" + type.getId().toLowerCase(Locale.ROOT));
+            ShapedRecipe recipe = new ShapedRecipe(key, result);
             recipe.shape("MMM", "MFM", "MMM");
-            recipe.setIngredient('M', type.getMaterial());
-            recipe.setIngredient('F', org.bukkit.Material.NETHER_WART);
+            recipe.setIngredient('M', type.getCraftMaterial());
+            recipe.setIngredient('F', Material.NETHER_WART);
             Bukkit.addRecipe(recipe);
         }
     }

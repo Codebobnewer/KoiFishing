@@ -14,29 +14,23 @@ import org.bukkit.event.player.PlayerFishEvent;
  */
 public class FishingListener implements Listener {
 
-    private final KoiPlugin plugin;
-
-    public FishingListener(KoiPlugin plugin) {
-        this.plugin = plugin;
-    }
-
     @EventHandler(ignoreCancelled = false)
     public void onFish(PlayerFishEvent event) {
         Player player = event.getPlayer();
 
-        if (!plugin.getFishManager().isWorldEnabled(player.getWorld())) {
+        if (!KoiPlugin.getFishManager().isWorldEnabled(player.getWorld())) {
             return;
         }
 
-        if (plugin.getFishManager().hasActiveSession(player.getUniqueId())) {
+        if (KoiPlugin.getFishManager().hasActiveSession(player.getUniqueId())) {
             event.setCancelled(true);
             return;
         }
 
         FishHook hook = event.getHook();
         switch (event.getState()) {
-            case FISHING -> plugin.getFishManager().handleCast(player, hook);
-            case BITE -> plugin.getFishManager().handleBite(player, hook);
+            case FISHING -> KoiPlugin.getFishManager().handleCast(player, hook);
+            case BITE -> KoiPlugin.getFishManager().handleBite(player, hook);
             default -> {
             }
         }

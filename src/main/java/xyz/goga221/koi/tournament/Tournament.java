@@ -28,6 +28,9 @@ public class Tournament {
     @Setter
     private MyScheduledTask endTask;
 
+    @Setter
+    private UUID chronosEventId;
+
     public Tournament(ItemStack prize, long endTimeMillis) {
         this.prize = prize;
         this.endTimeMillis = endTimeMillis;

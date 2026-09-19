@@ -27,9 +27,9 @@ public class DatabaseManager {
     @Getter
     private final CatchRepository catchRepository;
 
-    public DatabaseManager(KoiPlugin plugin) {
-        this.logger = plugin.getLogger();
-        File dbFile = new File(plugin.getDataFolder(), plugin.getConfigManager().getDatabaseFileName());
+    public DatabaseManager() {
+        this.logger = KoiPlugin.getInstance().getLogger();
+        File dbFile = new File(KoiPlugin.getInstance().getDataFolder(), KoiPlugin.getConfigManager().getDatabaseFileName());
 
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:sqlite:" + dbFile.getAbsolutePath());
@@ -67,6 +67,8 @@ public class DatabaseManager {
                         player_uuid TEXT PRIMARY KEY,
                         total_catches INTEGER NOT NULL,
                         best_rarity TEXT NOT NULL,
+                        sea_creatures_caught INTEGER NOT NULL DEFAULT 0,
+                        sea_creatures_killed INTEGER NOT NULL DEFAULT 0,
                         updated_at INTEGER NOT NULL
                     )
                     """);
@@ -77,6 +79,13 @@ public class DatabaseManager {
             // if still present so the schema actually matches what the code writes.
             dropColumnIfExists(connection, statement, "catches", "weight");
             dropColumnIfExists(connection, statement, "player_stats", "heaviest_catch");
+
+            // Same idea in reverse - CREATE TABLE IF NOT EXISTS won't add these to a player_stats
+            // table that predates the sea-creature-caught/killed counters.
+            addColumnIfMissing(connection, statement, "player_stats", "sea_creatures_caught",
+                    "INTEGER NOT NULL DEFAULT 0");
+            addColumnIfMissing(connection, statement, "player_stats", "sea_creatures_killed",
+                    "INTEGER NOT NULL DEFAULT 0");
         } catch (SQLException e) {
             throw new IllegalStateException("Failed to migrate Koi database", e);
         }
@@ -90,13 +99,24 @@ public class DatabaseManager {
         }
     }
 
+    private void addColumnIfMissing(Connection connection, Statement statement, String table, String column, String columnDefSql) throws SQLException {
+        try (ResultSet rs = connection.getMetaData().getColumns(null, null, table, column)) {
+            if (!rs.next()) {
+                statement.execute("ALTER TABLE " + table + " ADD COLUMN " + column + " " + columnDefSql);
+            }
+        }
+    }
+
     /**
      * Closes the connection pool with a hard time budget. HikariCP's own close() waits for any
      * checked-out connection to be returned before it can finish - if a query is genuinely
      * stuck, that wait can be unbounded, which would hang the whole server's shutdown since
      * Paper/Folia waits for every plugin's onDisable to return before it can exit. Closing on a
      * daemon thread and giving up after a few seconds means a stalled database can, at worst,
-     * leak that one connection rather than block the server from stopping.
+     * leak that one connection rather than block the server from stopping. This is deliberately
+     * a raw Thread, not UniversalScheduler - it does no Bukkit/Folia API work (pure JDBC
+     * cleanup), and the scheduler has no synchronous join-with-timeout primitive that would work
+     * from onDisable().
      */
     public void close() {
         if (dataSource == null || dataSource.isClosed()) {
